@@ -24,6 +24,21 @@ export async function generateMetadata({
       canonical: `/${lang}`,
       languages: { es: "/es", en: "/en" },
     },
+    openGraph: {
+      title: dict.meta.title,
+      description: dict.meta.description,
+      url: `https://tradehubconsulting.com/${lang}`,
+      siteName: "TradeHub Consulting",
+      locale: lang === "es" ? "es_MX" : "en_US",
+      images: [{ url: "/logo-v2.png", width: 1200, height: 630, alt: "TradeHub Consulting" }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dict.meta.title,
+      description: dict.meta.description,
+      images: ["/logo-v2.png"],
+    },
   };
 }
 

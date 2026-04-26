@@ -9,6 +9,20 @@ export const metadata: Metadata = {
   title: "TradeHub Consulting",
   description: "Customs excellence and foreign-trade consulting.",
   metadataBase: new URL("https://tradehubconsulting.com"),
+  openGraph: {
+    title: "TradeHub Consulting",
+    description: "Customs excellence and foreign-trade consulting.",
+    url: "https://tradehubconsulting.com",
+    siteName: "TradeHub Consulting",
+    images: [{ url: "/logo-v2.png", width: 1200, height: 630, alt: "TradeHub Consulting" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TradeHub Consulting",
+    description: "Customs excellence and foreign-trade consulting.",
+    images: ["/logo-v2.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
