@@ -70,13 +70,17 @@ export default function Header({ lang, dict, page = "home" }: Props) {
           </nav>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6">
+          {/* LangSwitch visible en móvil; en desktop ya está en la utility bar */}
+          <div className="md:hidden">
+            <LangSwitch current={lang} />
+          </div>
           <button className="text-foreground/70 hover:text-bc-blue hidden md:block" aria-label="Search">
             <Search className="w-5 h-5" />
           </button>
           <Link
             href={ctaHref}
-            className="px-6 py-2.5 bg-bc-blue text-white text-sm font-bold rounded hover:bg-bc-dark transition-colors"
+            className="px-4 md:px-6 py-2 md:py-2.5 bg-bc-blue text-white text-xs md:text-sm font-bold rounded hover:bg-bc-dark transition-colors whitespace-nowrap"
           >
             {dict.cta}
           </Link>
