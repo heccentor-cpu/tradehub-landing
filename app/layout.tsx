@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     description: "Customs excellence and foreign-trade consulting.",
     url: "https://tradehubconsulting.com",
     siteName: "TradeHub Consulting",
-    images: [{ url: "/logo-v2.png", width: 1200, height: 630, alt: "TradeHub Consulting" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "TradeHub Consulting" }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "TradeHub Consulting",
     description: "Customs excellence and foreign-trade consulting.",
-    images: ["/logo-v2.png"],
+    images: ["/og-image.png"],
   },
 };
 
