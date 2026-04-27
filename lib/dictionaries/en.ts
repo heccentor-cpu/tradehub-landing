@@ -5,7 +5,7 @@ const dict = {
       "Strategic foreign-trade consulting, IMMEX, CIVA audits, and customs compliance for companies operating in Mexico.",
   },
   header: {
-    phone: "553407891",
+    phone: "5534087891",
     langLabel: "English (US)",
     nav: [
       { label: "Services", anchor: "servicios" },

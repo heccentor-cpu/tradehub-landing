@@ -5,7 +5,7 @@ const dict = {
       "Consultoría estratégica en comercio exterior, IMMEX, auditorías CIVA y cumplimiento aduanero para empresas en México.",
   },
   header: {
-    phone: "553407891",
+    phone: "5534087891",
     langLabel: "Español (MX)",
     nav: [
       { label: "Servicios", anchor: "servicios" },

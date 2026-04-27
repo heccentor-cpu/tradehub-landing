@@ -19,12 +19,12 @@ export default function Footer({ dict }: { dict: Dict["footer"] }) {
           </div>
           <p className="text-white/60 text-sm leading-relaxed mb-6">{dict.blurb}</p>
           <a
-            href="https://wa.me/52553407891"
+            href="https://wa.me/525534087891"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white font-bold rounded hover:bg-[#1EBE5A] transition-colors"
           >
-            <WhatsAppIcon className="w-5 h-5" /> 553407891
+            <WhatsAppIcon className="w-5 h-5" /> 5534087891
           </a>
         </div>
         <div>

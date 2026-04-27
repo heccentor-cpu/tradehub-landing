@@ -34,7 +34,7 @@ export default function Header({ lang, dict, page = "home" }: Props) {
       {/* Utility bar */}
       <div className="hidden md:flex justify-end items-center gap-5 px-8 py-1.5 text-xs text-foreground/70 bg-bc-light">
         <a
-          href="https://wa.me/52553407891"
+          href="https://wa.me/525534087891"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-[#25D366] transition-colors flex items-center gap-1.5"
