@@ -41,6 +41,16 @@ export default function Header({ lang, dict, page = "home" }: Props) {
         >
           <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" /> {dict.phone}
         </a>
+        <a
+          href="mailto:danieljimenez@tradehubconsulting.com.mx"
+          className="hover:text-bc-blue transition-colors flex items-center gap-1.5"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 text-bc-blue">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-10 5L2 7" />
+          </svg>
+          danieljimenez@tradehubconsulting.com.mx
+        </a>
         <LangSwitch current={lang} />
       </div>
 
