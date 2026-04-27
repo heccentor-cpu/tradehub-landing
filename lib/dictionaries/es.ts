@@ -42,8 +42,9 @@ const dict = {
         items: [
           "Obtención, modificación y ampliación del Programa IMMEX.",
           "Diagnóstico y acompañamiento en el control de importaciones temporales, retornos, cambios de régimen y regularizaciones.",
-          "Conciliación de inventarios de Anexo 24 vs ERP.",
           "Estrategia de cumplimiento y defensa aduanera.",
+          "Diagnóstico, implementación y mantenimiento de certificaciones OEA (Operador Económico Autorizado).",
+          "Evaluación de riesgos y preparación para certificación CTPAT, incluyendo auditorías internas y fortalecimiento de seguridad en la cadena de suministro.",
         ],
       },
       {

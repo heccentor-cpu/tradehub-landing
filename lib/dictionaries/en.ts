@@ -42,8 +42,9 @@ const dict = {
         items: [
           "Obtaining, modifying, and expanding IMMEX Program licenses.",
           "Diagnostics and oversight of temporary-import controls, returns, regime changes, and regularizations.",
-          "Annex 24 inventory reconciliation against ERP systems.",
           "Compliance strategy and customs defense.",
+          "Diagnosis, implementation, and maintenance of AEO (Authorized Economic Operator) certifications.",
+          "Risk assessment and preparation for CTPAT certification, including internal audits and supply-chain security strengthening.",
         ],
       },
       {
