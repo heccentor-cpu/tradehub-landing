@@ -26,6 +26,16 @@ export default function Footer({ dict }: { dict: Dict["footer"] }) {
           >
             <WhatsAppIcon className="w-5 h-5" /> 5534087891
           </a>
+          <a
+            href="mailto:danieljimenez@tradehubconsulting.com.mx"
+            className="mt-4 flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors break-all"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 flex-shrink-0">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-10 5L2 7" />
+            </svg>
+            danieljimenez@tradehubconsulting.com.mx
+          </a>
         </div>
         <div>
           <h4 className="font-bold text-lg mb-4">{dict.h1}</h4>
