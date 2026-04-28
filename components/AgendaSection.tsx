@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, Check } from "lucide-react";
+import { ChevronRight, Check, Loader2 } from "lucide-react";
 import type { Dict } from "@/lib/i18n";
+
+const WEBHOOK_URL = "https://heccentor.app.n8n.cloud/webhook/tradehub-evaluacion";
 
 type Props = {
   dict: Dict["agenda"];
@@ -16,8 +18,10 @@ const FORM_COPY = {
     email: "Correo corporativo",
     reto: "Reto operativo",
     submit: "Solicitar evaluación",
+    sending: "Enviando...",
     successTitle: "Su solicitud fue recibida",
     successBody: "Un Socio Director se pondrá en contacto en las próximas 24 horas hábiles.",
+    errorBody: "Ocurrió un error al enviar. Escríbenos directamente a danieljimenez@tradehubconsulting.com.mx",
   },
   en: {
     nombre: "Full name",
@@ -25,17 +29,40 @@ const FORM_COPY = {
     email: "Corporate email",
     reto: "Operational challenge",
     submit: "Request assessment",
+    sending: "Sending...",
     successTitle: "Your request was received",
     successBody: "A Managing Partner will contact you within the next 24 business hours.",
+    errorBody: "Something went wrong. Please write to us directly at danieljimenez@tradehubconsulting.com.mx",
   },
 } as const;
 
 export default function AgendaSection({ dict, lang }: Props) {
   const t = FORM_COPY[lang];
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [form, setForm] = useState({ nombre: "", empresa: "", email: "", reto: "" });
   const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [k]: e.target.value });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("webhook error");
+      setSubmitted(true);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <section id="agenda" className="py-24 bg-bc-blue text-white px-6 relative overflow-hidden scroll-mt-32">
@@ -56,25 +83,7 @@ export default function AgendaSection({ dict, lang }: Props) {
               <p className="text-foreground/70">{t.successBody}</p>
             </div>
           ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const subject =
-                  lang === "es"
-                    ? `Solicitud de evaluación — ${form.empresa || form.nombre}`
-                    : `Assessment request — ${form.empresa || form.nombre}`;
-                const labels =
-                  lang === "es"
-                    ? { n: "Nombre", c: "Empresa", e: "Correo", r: "Reto operativo" }
-                    : { n: "Name", c: "Company", e: "Email", r: "Operational challenge" };
-                const body = `${labels.n}: ${form.nombre}\n${labels.c}: ${form.empresa}\n${labels.e}: ${form.email}\n\n${labels.r}:\n${form.reto || "—"}`;
-                const mailto = `mailto:danieljimenez@tradehubconsulting.com.mx?subject=${encodeURIComponent(
-                  subject
-                )}&body=${encodeURIComponent(body)}`;
-                window.location.href = mailto;
-                setSubmitted(true);
-              }}
-            >
+            <form onSubmit={handleSubmit}>
               <div className="grid md:grid-cols-2 gap-5 mb-5">
                 <Field label={t.nombre} value={form.nombre} onChange={update("nombre")} required />
                 <Field label={t.empresa} value={form.empresa} onChange={update("empresa")} required />
@@ -85,13 +94,26 @@ export default function AgendaSection({ dict, lang }: Props) {
               <div className="mb-7">
                 <Field label={t.reto} value={form.reto} onChange={update("reto")} textarea />
               </div>
+              {error && (
+                <p className="text-red-500 text-sm mb-4 text-right">{t.errorBody}</p>
+              )}
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 bg-bc-blue text-white px-7 py-3.5 rounded font-bold text-sm hover:bg-bc-dark transition-colors shadow-lg"
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 bg-bc-blue text-white px-7 py-3.5 rounded font-bold text-sm hover:bg-bc-dark transition-colors shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {t.submit}
-                  <ChevronRight className="w-4 h-4" />
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {t.sending}
+                    </>
+                  ) : (
+                    <>
+                      {t.submit}
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
