@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronRight, Check, Loader2 } from "lucide-react";
 import type { Dict } from "@/lib/i18n";
 
-const WEBHOOK_URL = "https://heccentor.app.n8n.cloud/webhook/tradehub-evaluacion";
+const WEBHOOK_URL = "/api/contact";
 
 type Props = {
   dict: Dict["agenda"];
@@ -53,7 +53,7 @@ export default function AgendaSection({ dict, lang }: Props) {
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ nombre: form.nombre, empresa: form.empresa, email: form.email, reto: form.reto }),
       });
       if (!res.ok) throw new Error("webhook error");
       setSubmitted(true);
