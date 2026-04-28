@@ -59,6 +59,19 @@ export default function AgendaSection({ dict, lang }: Props) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                const subject =
+                  lang === "es"
+                    ? `Solicitud de evaluación — ${form.empresa || form.nombre}`
+                    : `Assessment request — ${form.empresa || form.nombre}`;
+                const labels =
+                  lang === "es"
+                    ? { n: "Nombre", c: "Empresa", e: "Correo", r: "Reto operativo" }
+                    : { n: "Name", c: "Company", e: "Email", r: "Operational challenge" };
+                const body = `${labels.n}: ${form.nombre}\n${labels.c}: ${form.empresa}\n${labels.e}: ${form.email}\n\n${labels.r}:\n${form.reto || "—"}`;
+                const mailto = `mailto:danieljimenez@tradehubconsulting.com.mx?subject=${encodeURIComponent(
+                  subject
+                )}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailto;
                 setSubmitted(true);
               }}
             >
