@@ -147,9 +147,9 @@ function Field({
         {label}
       </span>
       {textarea ? (
-        <textarea value={value} onChange={onChange} rows={3} className={`${cls} resize-y font-sans`} />
+        <textarea id={label} name={label} value={value} onChange={onChange} rows={3} className={`${cls} resize-y font-sans`} />
       ) : (
-        <input type={type} value={value} onChange={onChange} required={required} className={cls} />
+        <input id={label} name={label} type={type} value={value} onChange={onChange} required={required} className={cls} />
       )}
     </label>
   );
