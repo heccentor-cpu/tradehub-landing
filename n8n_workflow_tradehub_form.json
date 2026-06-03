@@ -1,0 +1,126 @@
+{
+  "name": "🤖 TradeHub Landing · Solicitudes de evaluación",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [],
+  "nodes": [
+    {
+      "id": "webhook-trigger",
+      "name": "📥 Webhook · Form submission",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tradehub-evaluacion",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      }
+    },
+    {
+      "id": "sheets-append",
+      "name": "📊 Google Sheets · Agregar solicitud",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [240, 300],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "TU-DOCUMENT-ID",
+          "mode": "id",
+          "cachedResultName": "TradeHub - Solicitudes (cambia este ID)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Hoja 1",
+          "mode": "list",
+          "cachedResultName": "Hoja 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre Completo": "={{ $json.body.nombre }}",
+            "Empresa": "={{ $json.body.empresa }}",
+            "Correo Corporativo": "={{ $json.body.email }}",
+            "Reto Operativo": "={{ $json.body.reto }}",
+            "Fecha": "={{ $now.toFormat('dd/LL/yyyy HH:mm') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "Nombre Completo", "displayName": "Nombre Completo", "type": "string", "canBeUsedToMatch": true },
+            { "id": "Empresa", "displayName": "Empresa", "type": "string", "canBeUsedToMatch": true },
+            { "id": "Correo Corporativo", "displayName": "Correo Corporativo", "type": "string", "canBeUsedToMatch": true },
+            { "id": "Reto Operativo", "displayName": "Reto Operativo", "type": "string", "canBeUsedToMatch": true },
+            { "id": "Fecha", "displayName": "Fecha", "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "email-notify",
+      "name": "✉ Email · Notificar a Daniel",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [480, 300],
+      "parameters": {
+        "sendTo": "danieljimenez@tradehubconsulting.com.mx",
+        "subject": "🔔 Nueva solicitud de evaluación · TradeHub Landing",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html><html><body style=\"font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;\"><div style=\"background: linear-gradient(135deg, #2335a3 0%, #001f60 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0;\"><h2 style=\"margin: 0; font-size: 20px;\">Nueva solicitud de evaluación</h2><p style=\"margin: 8px 0 0; opacity: 0.85; font-size: 14px;\">TradeHub Consulting · Landing Page</p></div><div style=\"background: #fff; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;\"><p>Hola Daniel,</p><p>Se ha recibido una <strong>nueva solicitud de evaluación</strong> a través del formulario de la landing page.</p><h3 style=\"color: #2335a3; border-bottom: 2px solid #ebf0f9; padding-bottom: 6px; margin-top: 24px;\">Datos del solicitante</h3><table style=\"width: 100%; border-collapse: collapse;\"><tr><td style=\"padding: 8px 0; font-weight: 600; width: 35%;\">Nombre:</td><td style=\"padding: 8px 0;\">{{ $('📥 Webhook · Form submission').item.json.body.nombre }}</td></tr><tr style=\"background: #f9fafb;\"><td style=\"padding: 8px; font-weight: 600;\">Empresa:</td><td style=\"padding: 8px;\">{{ $('📥 Webhook · Form submission').item.json.body.empresa }}</td></tr><tr><td style=\"padding: 8px 0; font-weight: 600;\">Correo:</td><td style=\"padding: 8px 0;\"><a href=\"mailto:{{ $('📥 Webhook · Form submission').item.json.body.email }}\" style=\"color: #2335a3;\">{{ $('📥 Webhook · Form submission').item.json.body.email }}</a></td></tr><tr style=\"background: #f9fafb;\"><td style=\"padding: 8px; font-weight: 600; vertical-align: top;\">Reto operativo:</td><td style=\"padding: 8px;\">{{ $('📥 Webhook · Form submission').item.json.body.reto || '—' }}</td></tr></table><div style=\"background: #ebf0f9; border-left: 4px solid #2335a3; padding: 16px; margin-top: 24px; border-radius: 4px;\"><strong>📊 Acción requerida:</strong><br>Por favor revisa el Google Sheet donde se registró esta solicitud junto con el historial completo de leads.</div><p style=\"margin-top: 24px; font-size: 12px; color: #6b7280;\">Notificación automática · {{ $now.toFormat('dd/LL/yyyy HH:mm') }}</p></div></body></html>",
+        "options": {}
+      }
+    },
+    {
+      "id": "respond-ok",
+      "name": "✅ Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, message: 'Solicitud recibida correctamente' } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "📥 Webhook · Form submission": {
+      "main": [
+        [{ "node": "📊 Google Sheets · Agregar solicitud", "type": "main", "index": 0 }]
+      ]
+    },
+    "📊 Google Sheets · Agregar solicitud": {
+      "main": [
+        [{ "node": "✉ Email · Notificar a Daniel", "type": "main", "index": 0 }]
+      ]
+    },
+    "✉ Email · Notificar a Daniel": {
+      "main": [
+        [{ "node": "✅ Respond OK", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}
