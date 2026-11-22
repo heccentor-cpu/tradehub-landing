@@ -1,12 +1,17 @@
 ---
 name: record
-description: Graba en video lo que se hace en una página web (abrirla, recorrerla, hacer clic, llenar y enviar formularios), describe paso a paso lo que se hizo y decide, según la complejidad de la tarea, si conviene convertirla en una skill de Claude o en un flujo de n8n, y lo crea. Úsala cuando el usuario escriba /record o pida "graba un video de esta página", "graba cómo se hace X en este sitio", "documenta este proceso de la web" o quiera convertir una tarea que se hace en el navegador en una skill o un flujo automatizado.
-argument-hint: <url> [qué hacer en la página]
+description: Graba en video lo que se hace en una página web (abrirla, recorrerla, hacer clic, llenar y enviar formularios) o toma una reunión grabada en Fathom o Fireflies y extrae de su transcripción el proceso que se explicó o mostró en pantalla; describe paso a paso lo que se hizo y decide, según la complejidad, si conviene convertirlo en una skill de Claude o en un flujo de n8n, y lo crea o actualiza. Úsala cuando el usuario escriba /record, pida "graba un video de esta página", "graba cómo se hace X en este sitio", "documenta este proceso", pegue un enlace de fathom.video o app.fireflies.ai pidiendo sacar el proceso de la reunión, o quiera convertir una tarea en una skill o un flujo automatizado.
+argument-hint: <url de la página | enlace de Fathom o Fireflies> [qué hacer]
 ---
 
 # /record: grabar, describir y decidir skill o flujo
 
-El usuario da una URL y, opcionalmente, la tarea a realizar ("llena el formulario de contacto", "busca el producto X y agrégalo al carrito"). Haces la tarea en un navegador mientras se graba el video, describes lo que pasó y decides si esa tarea debe quedar como **skill** o como **flujo de n8n**. Habla con el usuario en su idioma.
+Hay dos modos, según lo que dé el usuario:
+
+- **Página web** (cualquier URL que no sea de Fathom ni Fireflies): haces la tarea en un navegador mientras se graba el video. Sigue los pasos 1 a 4.
+- **Reunión** (enlace de `fathom.video` o `app.fireflies.ai`, o el nombre de una reunión grabada con ellos): lees la transcripción y extraes el proceso que se explicó. Sigue `reunion.md` (en esta misma carpeta) y vuelve al paso 5.
+
+Los dos terminan igual: describir (5), decidir si debe quedar como **skill** o como **flujo de n8n** (6), crear o actualizar (7) y entregar (8). Habla con el usuario en su idioma.
 
 Herramienta: `node .claude/skills/record/scripts/record.cjs` (rutas relativas a la raíz del repo). Usa el Chromium y Playwright que ya existan. Si el script dice que falta Playwright, díselo al usuario con el comando que imprime y no instales navegadores por tu cuenta.
 
@@ -84,7 +89,7 @@ Opciones: `--device "iPhone 13"`, `--viewport 1440x900`, `--mock "/api/contact"`
 
 ## 5. Describir lo que se hizo
 
-Escribe `<carpeta>/descripcion.md` a partir de `log.json` y las capturas:
+En modo reunión, usa los campos de `reunion.md`. En modo página, escribe `<carpeta>/descripcion.md` a partir de `log.json` y las capturas:
 
 - **Objetivo:** qué se quería lograr.
 - **Resultado:** logrado / parcial / no se logró, con la evidencia (captura o texto que apareció).
@@ -96,11 +101,16 @@ Escribe `<carpeta>/descripcion.md` a partir de `log.json` y las capturas:
 
 ## 6. Decidir: skill o flujo de n8n
 
-Evalúa la complejidad de la tarea con estas señales:
+Primero revisa dos condiciones que deciden por sí solas:
+
+- **Los datos solo están en la computadora del usuario o en archivos sin estructura fija** (Excel que cambian de forma, PDFs, documentos que hay que interpretar) → **skill**. Un servidor de n8n no llega a esos archivos. Si además se repite en un horario, la skill se programa como tarea programada.
+- **Tiene que reaccionar al momento a un evento de otro sistema** (llega un formulario, un correo, un webhook, el tipo de cambio cruza un umbral), sin que nadie abra Claude → **flujo n8n**.
+
+Si ninguna aplica, evalúa la complejidad con estas señales:
 
 | Señal | Apunta a **skill** | Apunta a **flujo n8n** |
 |---|---|---|
-| Quién la inicia | Una persona, a pedido, conversando con Claude | Un evento (formulario, correo, webhook) o un horario |
+| Quién la inicia | Una persona, a pedido o en un horario fijo (una skill se puede programar) | Un evento de otro sistema (formulario, correo, webhook) |
 | Pasos y sistemas | Pocos pasos (≈ 6 o menos) en un solo sitio | Muchos pasos o encadena 2+ sistemas (CRM, correo, hojas, ERP) |
 | Variabilidad | Cambia cada vez; hay que leer, interpretar, redactar o decidir | Siempre igual; reglas fijas o ramas claras |
 | Cómo se accede | Solo hay pantalla web, no se vio una API | Hay API o webhook (visible en `red`) o un nodo nativo de n8n |
@@ -116,11 +126,19 @@ Evalúa la complejidad de la tarea con estas señales:
 
 Escribe la decisión con las señales que la sostienen.
 
-## 7. Crear el resultado
+## 7. Crear o actualizar el resultado
+
+**Revisa primero si ya existe.** Busca una skill o un flujo que ya cubra la tarea:
+
+- skills del proyecto (`.claude/skills/`);
+- skills de la cuenta (el listado de skills disponibles; sus archivos pueden estar en `~/.claude/skills/`);
+- si hay herramientas de n8n, flujos con nombre parecido.
+
+Si existe, no crees un duplicado. Compara lo que se grabó o se dijo en la reunión con lo que ya hace y lista las diferencias (reglas nuevas, pasos faltantes, contradicciones), cada una con su evidencia (paso o minuto). Propón los cambios y aplícalos solo si el usuario lo pide.
 
 ### Si es skill
 
-1. Crea `.claude/skills/<slug>/SKILL.md` y copia ahí `pasos.json`.
+1. Crea `.claude/skills/<slug>/SKILL.md`. En modo página, copia ahí `pasos.json`. En modo reunión no hay pasos de navegador: la skill describe el proceso, sus fuentes, reglas y validaciones.
 2. Cambia los datos que varían por `{{variables}}`.
 3. Usa esta estructura:
 
@@ -160,7 +178,7 @@ Pregunta al usuario si quiere guardarla en el repo con un commit; no hagas el co
 
 ## 8. Entregar
 
-- Envía al usuario el video (mp4 si existe) y `descripcion.md` con la herramienta para enviar archivos, si la hay; si no, da las rutas completas.
+- Envía al usuario `descripcion.md` y, en modo página, el video (mp4 si existe), con la herramienta para enviar archivos si la hay; si no, da las rutas completas.
 - Resume en pocas líneas:
   - qué se grabó y el resultado;
   - la decisión (skill o flujo) y por qué;
