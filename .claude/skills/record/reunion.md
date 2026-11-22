@@ -35,7 +35,7 @@ ffmpeg -loglevel error -ss <segundos> -i <video> -frames:v 1 <carpeta>/capturas/
 
 **Confidencialidad.** Estas reuniones suelen traer datos de clientes. Todo queda en `recordings/`, fuera de git. No lo subas ni lo compartas sin que el usuario lo pida.
 
-## Campos de `descripcion.md` en modo reunión
+## Campos de la descripción en modo reunión (anexo de `conclusion.md`)
 
 - **Reunión:** título, fecha, participantes, enlace y tramo útil (p. ej. "00:00–45:46; después hay conversación ajena al tema").
 - **Objetivo del proceso:** qué se busca y por qué importa (riesgo, tiempo, errores).
@@ -46,6 +46,5 @@ ffmpeg -loglevel error -ss <segundos> -i <video> -frames:v 1 <carpeta>/capturas/
 - **Dolores y riesgos:** lo que se quiere resolver.
 - **Información faltante:** lo que no se dijo y hace falta para automatizar.
 - **Otros procesos detectados.**
-- **Decisión:** la del paso 6 de `SKILL.md`, con su porqué.
 
 Si el proceso se hace en una página web a la que tienes acceso, ofrece grabarlo después con el modo página para tener video y pasos exactos.

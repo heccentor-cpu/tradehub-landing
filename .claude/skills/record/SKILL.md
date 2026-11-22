@@ -1,6 +1,6 @@
 ---
 name: record
-description: Graba en video lo que se hace en una página web (abrirla, recorrerla, hacer clic, llenar y enviar formularios) o toma una reunión grabada en Fathom o Fireflies y extrae de su transcripción el proceso que se explicó o mostró en pantalla; describe paso a paso lo que se hizo y decide, según la complejidad, si conviene convertirlo en una skill de Claude o en un flujo de n8n, y lo crea o actualiza. Úsala cuando el usuario escriba /record, pida "graba un video de esta página", "graba cómo se hace X en este sitio", "documenta este proceso", pegue un enlace de fathom.video o app.fireflies.ai pidiendo sacar el proceso de la reunión, o quiera convertir una tarea en una skill o un flujo automatizado.
+description: Graba en video lo que se hace en una página web (abrirla, recorrerla, hacer clic, llenar y enviar formularios) o toma una reunión grabada en Fathom o Fireflies y extrae de su transcripción el proceso que se explicó o mostró en pantalla; describe paso a paso lo que se hizo, concluye si debe ser un flujo de n8n (reglas determinísticas) o una skill en .md para Claude (requiere criterio) y entrega la propuesta de cómo construirlo; si es skill, la crea. Úsala cuando el usuario escriba /record, pida "graba un video de esta página", "graba cómo se hace X en este sitio", "documenta este proceso", pegue un enlace de fathom.video o app.fireflies.ai pidiendo sacar el proceso de la reunión, o quiera convertir una tarea en una skill o un flujo automatizado.
 argument-hint: <url de la página | enlace de Fathom o Fireflies> [qué hacer]
 ---
 
@@ -11,7 +11,7 @@ Hay dos modos, según lo que dé el usuario:
 - **Página web** (cualquier URL que no sea de Fathom ni Fireflies): haces la tarea en un navegador mientras se graba el video. Sigue los pasos 1 a 4.
 - **Reunión** (enlace de `fathom.video` o `app.fireflies.ai`, o el nombre de una reunión grabada con ellos): lees la transcripción y extraes el proceso que se explicó. Sigue `reunion.md` (en esta misma carpeta) y vuelve al paso 5.
 
-Los dos terminan igual: describir (5), decidir si debe quedar como **skill** o como **flujo de n8n** (6), crear o actualizar (7) y entregar (8). Habla con el usuario en su idioma.
+Los dos terminan igual: describir (5), concluir si es **flujo de n8n** o **skill** (6), escribir la propuesta de construcción (7) y entregar (8). Habla con el usuario en su idioma.
 
 Herramienta: `node .claude/skills/record/scripts/record.cjs` (rutas relativas a la raíz del repo). Usa el Chromium y Playwright que ya existan. Si el script dice que falta Playwright, díselo al usuario con el comando que imprime y no instales navegadores por tu cuenta.
 
@@ -89,54 +89,68 @@ Opciones: `--device "iPhone 13"`, `--viewport 1440x900`, `--mock "/api/contact"`
 
 ## 5. Describir lo que se hizo
 
-En modo reunión, usa los campos de `reunion.md`. En modo página, escribe `<carpeta>/descripcion.md` a partir de `log.json` y las capturas:
+La descripción va como anexo de `conclusion.md` (paso 7). En modo reunión, usa los campos de `reunion.md`. En modo página, sácala de `log.json` y las capturas:
 
 - **Objetivo:** qué se quería lograr.
 - **Resultado:** logrado / parcial / no se logró, con la evidencia (captura o texto que apareció).
 - **Pasos:** tabla con `#`, tiempo en el video (`t`), qué se hizo, resultado.
 - **Datos usados:** qué variables y valores se usaron, sin secretos.
-- **Peticiones de red relevantes** (`red` en el log): los POST/PUT y llamadas a APIs o webhooks muestran si hay una API detrás de la pantalla. Esto pesa en la decisión.
+- **Peticiones de red relevantes** (`red` en el log): los POST/PUT y llamadas a APIs o webhooks muestran si hay una API detrás de la pantalla.
 - **Observaciones:** errores de consola, diálogos, ventanas nuevas, pasos lentos, lo que se simuló con `--mock`.
-- **Decisión:** la del paso 6, con su porqué.
 
-## 6. Decidir: skill o flujo de n8n
+## 6. Concluir: ¿flujo o skill?
 
-Primero revisa dos condiciones que deciden por sí solas:
+La regla es una sola: **¿el proceso se puede escribir completo como reglas determinísticas?**
 
-- **Los datos solo están en la computadora del usuario o en archivos sin estructura fija** (Excel que cambian de forma, PDFs, documentos que hay que interpretar) → **skill**. Un servidor de n8n no llega a esos archivos. Si además se repite en un horario, la skill se programa como tarea programada.
-- **Tiene que reaccionar al momento a un evento de otro sistema** (llega un formulario, un correo, un webhook, el tipo de cambio cruza un umbral), sin que nadie abra Claude → **flujo n8n**.
+- **Sí → flujo en n8n.** Las mismas entradas dan siempre el mismo resultado. Cada paso es una fórmula, una condición "si… entonces…", un dato que se lee de un lugar fijo o un aviso con umbral. Nadie tiene que interpretar ni decidir caso por caso.
+- **No → skill en `.md` para Claude.** Hay que interpretar documentos o conversaciones, redactar, decidir con conocimiento del negocio, o los archivos cambian de forma y hay que entenderlos cada vez.
 
-Si ninguna aplica, evalúa la complejidad con estas señales:
+Cómo aplicarla:
 
-| Señal | Apunta a **skill** | Apunta a **flujo n8n** |
-|---|---|---|
-| Quién la inicia | Una persona, a pedido o en un horario fijo (una skill se puede programar) | Un evento de otro sistema (formulario, correo, webhook) |
-| Pasos y sistemas | Pocos pasos (≈ 6 o menos) en un solo sitio | Muchos pasos o encadena 2+ sistemas (CRM, correo, hojas, ERP) |
-| Variabilidad | Cambia cada vez; hay que leer, interpretar, redactar o decidir | Siempre igual; reglas fijas o ramas claras |
-| Cómo se accede | Solo hay pantalla web, no se vio una API | Hay API o webhook (visible en `red`) o un nodo nativo de n8n |
-| Frecuencia | Ocasional | Repetitiva, alto volumen o sin supervisión |
-| Si algo falla | Basta con que Claude lo vea y avise | Necesita reintentos, alertas y registro |
+1. **Lista las reglas** del proceso, cada una con su evidencia (paso grabado o minuto de la reunión).
+2. **Marca cada regla** como determinística o de criterio.
+3. **Concluye:**
+   - Todas determinísticas → **flujo**.
+   - El núcleo es de criterio → **skill**.
+   - Casi todo determinístico con un punto de criterio pequeño → sigue siendo **flujo**. Ese punto se vuelve una regla explícita acordada con el usuario o una pausa para aprobación humana; dilo en la propuesta.
 
-**Regla:** gana la columna con más señales.
+Que los datos vivan hoy en la computadora del usuario no cambia la conclusión. Para un flujo, la propuesta incluye cómo llegan los datos a n8n.
 
-- **Complejidad baja** (pocos pasos, un sitio, a pedido) → **skill**.
-- **Complejidad alta** (varios sistemas, disparador automático, volumen) → **flujo n8n**.
-- **Empate:** elige **skill**, que es más barata de crear y cambiar, y menciona que puede escalar a flujo.
-- **Tarea con criterio** (leer, interpretar, redactar) que además encaja en flujo: sigue siendo **flujo**, con un nodo de IA para la parte de criterio.
+## 7. Escribir la conclusión y la propuesta de construcción
 
-Escribe la decisión con las señales que la sostienen.
-
-## 7. Crear o actualizar el resultado
-
-**Revisa primero si ya existe.** Busca una skill o un flujo que ya cubra la tarea:
+**Revisa primero si ya existe.** Busca una skill o un flujo que ya cubra el proceso:
 
 - skills del proyecto (`.claude/skills/`);
 - skills de la cuenta (el listado de skills disponibles; sus archivos pueden estar en `~/.claude/skills/`);
 - si hay herramientas de n8n, flujos con nombre parecido.
 
-Si existe, no crees un duplicado. Compara lo que se grabó o se dijo en la reunión con lo que ya hace y lista las diferencias (reglas nuevas, pasos faltantes, contradicciones), cada una con su evidencia (paso o minuto). Propón los cambios y aplícalos solo si el usuario lo pide.
+Si existe, no propongas un duplicado. La propuesta es qué cambiar en lo existente, o cómo se conecta lo nuevo con lo existente.
 
-### Si es skill
+Escribe `<carpeta>/conclusion.md` con tres partes, en este orden:
+
+1. **Conclusión.** "Flujo en n8n" o "Skill en .md para Claude" en una línea, seguida de la tabla de reglas: regla, determinística o de criterio, evidencia.
+2. **Propuesta de construcción**, según la conclusión (abajo).
+3. **Anexo: descripción** del paso 5.
+
+### Si es flujo (n8n)
+
+La propuesta lleva:
+
+- **Disparador:** horario, evento (webhook, correo, archivo nuevo) y por qué.
+- **Datos:** de dónde salen y cómo llegan a n8n. Si hoy viven en la computadora del usuario, propone dónde ponerlos (carpeta en la nube, correo).
+- **Nodos en orden:** tipo de nodo de n8n, qué hace, entrada y salida.
+- **Reglas programables:** cada regla escrita de forma que se pueda programar (fórmula, condición, celda o campo exacto), con su evidencia.
+- **Validaciones y alertas:** qué se revisa antes de entregar y a quién se avisa si algo falla.
+- **Salida:** qué produce, en qué formato y dónde queda.
+- **Credenciales:** cuáles ya existen en n8n y cuáles faltan.
+- **Prueba de aceptación:** un caso real con su resultado esperado.
+- **Pendientes:** lo que hay que confirmar antes de construir.
+
+Si hay herramientas de n8n, en este paso úsalas solo para consultar: nodos disponibles y credenciales existentes. Construye el flujo **solo cuando el usuario apruebe la propuesta**: sigue las instrucciones del servidor de n8n, valídalo y créalo sin publicar. Publícalo solo si el usuario lo confirma. Sin herramientas de n8n, la propuesta puede incluir el JSON importable.
+
+### Si es skill (.md para Claude)
+
+En `conclusion.md`, la propuesta resume qué hace la skill, qué datos recibe, sus reglas y validaciones, y dónde quedó. Después créala:
 
 1. Crea `.claude/skills/<slug>/SKILL.md`. En modo página, copia ahí `pasos.json`. En modo reunión no hay pasos de navegador: la skill describe el proceso, sus fuentes, reglas y validaciones.
 2. Cambia los datos que varían por `{{variables}}`.
@@ -148,14 +162,14 @@ name: <slug>
 description: <qué hace y cuándo usarla, con frases que diría el usuario>
 ---
 # <Título>
-Grabada con /record el <fecha> sobre <url>. Video de referencia: <ruta del video>.
+Creada con /record el <fecha> a partir de <url o reunión>.
 
 ## Datos que necesitas
 - `{{variable}}`: qué es y de dónde sale.
 
 ## Pasos
-1. Reproduce la tarea: `node .claude/skills/record/scripts/record.cjs run --steps .claude/skills/<slug>/pasos.json --out recordings/<fecha>-<slug> --var variable=valor`
-2. Revisa las capturas y confirma que aparece <resultado esperado>.
+1. <Paso>. En modo página: `node .claude/skills/record/scripts/record.cjs run --steps .claude/skills/<slug>/pasos.json --out recordings/<fecha>-<slug> --var variable=valor`
+2. Revisa el resultado y confirma que aparece <resultado esperado>.
 3. <Paso que envía datos reales>: confirma con el usuario antes de hacerlo de verdad.
 
 ## Si falla
@@ -164,23 +178,11 @@ Grabada con /record el <fecha> sobre <url>. Video de referencia: <ruta del video
 
 Pregunta al usuario si quiere guardarla en el repo con un commit; no hagas el commit sin que lo pida.
 
-### Si es flujo de n8n
-
-**Con herramientas de n8n disponibles** (`mcp__n8n__*`):
-
-1. Sigue las instrucciones del servidor de n8n: preferencias del usuario, referencia del SDK y buenas prácticas.
-2. Construye el flujo para que haga la tarea **por API**, con las llamadas que se vieron en `red`, no imitando clics.
-3. Valídalo y créalo **sin publicar**. Publícalo solo si el usuario lo confirma.
-
-**Sin API detrás de la pantalla:** n8n tendría que imitar la petición o usar un servicio de navegador. Dilo y reconsidera si conviene más una skill.
-
-**Sin herramientas de n8n:** escribe `<carpeta>/flujo-n8n.json` importable (nodos y conexiones) y explica qué hace cada nodo y qué credenciales necesita.
-
 ## 8. Entregar
 
-- Envía al usuario `descripcion.md` y, en modo página, el video (mp4 si existe), con la herramienta para enviar archivos si la hay; si no, da las rutas completas.
+- Envía al usuario `conclusion.md` y, en modo página, el video (mp4 si existe), con la herramienta para enviar archivos si la hay; si no, da las rutas completas.
 - Resume en pocas líneas:
-  - qué se grabó y el resultado;
-  - la decisión (skill o flujo) y por qué;
-  - qué se creó y dónde;
-  - qué queda pendiente (publicar el flujo, hacer commit, pasos simulados).
+  - la conclusión (flujo o skill) y la regla que la decide;
+  - cómo se construiría;
+  - qué se creó, si fue skill, y dónde;
+  - qué queda pendiente (aprobar la propuesta, datos por confirmar, hacer commit).
