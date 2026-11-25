@@ -6,3 +6,6 @@ node_modules
 
 # Videos y capturas de la skill /record
 /recordings/
+
+# Python
+__pycache__/
